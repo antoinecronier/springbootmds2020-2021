@@ -6,11 +6,13 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.tactfactory.demo.entities.BaseEntity;
 
 public abstract class BaseCrudController<T extends BaseEntity, DTO> {
 
+    protected static final String FLASH_ERRORS = "errors";
     protected static final String INDEX_ROUTE = "/index";
     protected static final String CREATE_ROUTE = "/create";
     protected static final String DETAILS_ROUTE = "/details/{id}";
@@ -18,10 +20,12 @@ public abstract class BaseCrudController<T extends BaseEntity, DTO> {
 
     private final String TEMPLATE_NAME;
     protected final String REDIRECT_INDEX;
+    protected final String REDIRECT_CREATE;
 
     public BaseCrudController(String templateName) {
         this.TEMPLATE_NAME = templateName;
         this.REDIRECT_INDEX = "redirect:" + "/" + this.TEMPLATE_NAME + INDEX_ROUTE;
+        this.REDIRECT_CREATE = "redirect:" + "/" + this.TEMPLATE_NAME + CREATE_ROUTE;
     }
 
     @Autowired
@@ -36,7 +40,11 @@ public abstract class BaseCrudController<T extends BaseEntity, DTO> {
     }
 
     @GetMapping(value = {CREATE_ROUTE})
-    public String createGet(final Model model) {
+    public String createGet(final Model model, final RedirectAttributes attributes) {
+        if (attributes.getFlashAttributes().containsKey(FLASH_ERRORS)) {
+            model.addAttribute(FLASH_ERRORS, attributes.getFlashAttributes().get(FLASH_ERRORS));
+        }
+
         this.preCreateGet(model);
         return "/" + this.TEMPLATE_NAME + CREATE_ROUTE;
     }
@@ -46,14 +54,21 @@ public abstract class BaseCrudController<T extends BaseEntity, DTO> {
     }
 
     @PostMapping(value = {CREATE_ROUTE})
-    public String createPost(final DTO dto) {
-        T item = this.preCreatePost(dto);
-        this.repository.save(item);
+    public String createPost(final DTO dto, final RedirectAttributes attributes) {
+        String result = this.REDIRECT_INDEX;
 
-        return this.REDIRECT_INDEX;
+        try {
+            T item = this.preCreatePost(dto);
+            this.repository.save(item);
+        } catch (Exception e) {
+            attributes.addFlashAttribute(FLASH_ERRORS, e.getMessage());
+            result = this.REDIRECT_CREATE;
+        }
+
+        return result;
     }
 
-    protected T preCreatePost(DTO dto) {
+    protected T preCreatePost(DTO dto) throws Exception {
         return (T)dto;
     }
 

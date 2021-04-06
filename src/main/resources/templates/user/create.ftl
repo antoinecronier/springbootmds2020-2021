@@ -1,3 +1,6 @@
+<#if errors??>
+${errors}
+</#if>
 <form method="POST">
   <label for="firstname">Firstname</label>
   <input type="text" id="firstname" name="firstname"/>

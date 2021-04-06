@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 import com.tactfactory.demo.dtos.UserDto;
+import com.tactfactory.demo.entities.Role;
 import com.tactfactory.demo.entities.User;
 import com.tactfactory.demo.services.RoleService;
 import com.tactfactory.demo.services.UserService;
@@ -39,12 +40,18 @@ public class UserController extends BaseCrudController<User, UserDto> {
     }
 
     @Override
-    protected User preCreatePost(UserDto dto) {
+    protected User preCreatePost(UserDto dto) throws Exception {
         User user = new User();
         user.setFirstname(dto.getFirstname());
         user.setLastname(dto.getLastname());
 
-        user.setRole(this.roleService.findRole(dto.getRoleId()));
+        if (dto.getRoleId() != null) {
+            Role role = this.roleService.findRole(dto.getRoleId());
+            if (role == null) {
+                throw new Exception("Cannot find whished role");
+            }
+            user.setRole(role);
+        }
 
         return user;
     }
