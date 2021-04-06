@@ -7,7 +7,7 @@ import com.tactfactory.demo.entities.Role;
 
 @Controller
 @RequestMapping(RoleController.BASE_ROUTE)
-public class RoleController extends BaseCrudController<Role> {
+public class RoleController extends BaseCrudController<Role, Role> {
     public static final String TEMPLATE_NAME = "role";
     public static final String BASE_ROUTE = "role";
 

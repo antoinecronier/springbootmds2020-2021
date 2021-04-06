@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 
 import com.tactfactory.demo.entities.BaseEntity;
 
-public abstract class BaseCrudController<T extends BaseEntity> {
+public abstract class BaseCrudController<T extends BaseEntity, DTO> {
 
     protected static final String INDEX_ROUTE = "/index";
     protected static final String CREATE_ROUTE = "/create";
@@ -37,16 +37,24 @@ public abstract class BaseCrudController<T extends BaseEntity> {
 
     @GetMapping(value = {CREATE_ROUTE})
     public String createGet(final Model model) {
-
+        this.preCreateGet(model);
         return "/" + this.TEMPLATE_NAME + CREATE_ROUTE;
     }
 
-    @PostMapping(value = {CREATE_ROUTE})
-    public String createPost(final T item) {
+    protected void preCreateGet(final Model model) {
 
+    }
+
+    @PostMapping(value = {CREATE_ROUTE})
+    public String createPost(final DTO dto) {
+        T item = this.preCreatePost(dto);
         this.repository.save(item);
 
         return this.REDIRECT_INDEX;
+    }
+
+    protected T preCreatePost(DTO dto) {
+        return (T)dto;
     }
 
     @GetMapping(value = {DETAILS_ROUTE})
