@@ -1,3 +1,5 @@
+<#include "../bases/importbase.ftl"/>
+
 <a href="/user/create">Create</a>
 <#list items as item>
   <div>
