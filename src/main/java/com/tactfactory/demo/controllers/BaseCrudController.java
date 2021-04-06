@@ -1,5 +1,9 @@
 package com.tactfactory.demo.controllers;
 
+import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.ui.Model;
@@ -32,17 +36,27 @@ public abstract class BaseCrudController<T extends BaseEntity, DTO> {
     private JpaRepository<T, Long> repository;
 
     @GetMapping(value = {"", "/", INDEX_ROUTE})
-    public String index(final Model model) {
+    public String index(final Model model, final HttpServletResponse response) {
 
         model.addAttribute("items", repository.findAll());
+        response.addCookie(new Cookie("moncookie", "coucouDeMonCookie"));
 
         return "/" + this.TEMPLATE_NAME + INDEX_ROUTE;
     }
 
     @GetMapping(value = {CREATE_ROUTE})
-    public String createGet(final Model model, final RedirectAttributes attributes) {
+    public String createGet(final Model model, final RedirectAttributes attributes, final HttpServletRequest request) {
+
         if (attributes.getFlashAttributes().containsKey(FLASH_ERRORS)) {
             model.addAttribute(FLASH_ERRORS, attributes.getFlashAttributes().get(FLASH_ERRORS));
+        }
+
+        if (request.getCookies() != null) {
+            for (Cookie cookie : request.getCookies()) {
+                if (cookie.getName().equals("moncookie")) {
+                    model.addAttribute("moncookie", cookie.getValue());
+                }
+            }
         }
 
         this.preCreateGet(model);
